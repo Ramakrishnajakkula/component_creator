@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    margin: 0;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  code {
+    font-family: 'JetBrains Mono', Monaco, Consolas, monospace;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+  }
+  
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+  
+  .text-error {
+    @apply text-red-600 text-sm mt-1;
+  }
+}
+
+/* VS Code Dark Theme Override for Prism */
+.token.keyword {
+  color: #569cd6 !important; /* Blue for keywords */
+}
+
+.token.string {
+  color: #ce9178 !important; /* Orange for strings */
+}
+
+.token.comment {
+  color: #6a9955 !important; /* Green for comments */
+  font-style: italic !important;
+}
+
+.token.number {
+  color: #b5cea8 !important; /* Light green for numbers */
+}
+
+.token.boolean {
+  color: #569cd6 !important; /* Blue for booleans */
+}
+
+.token.function {
+  color: #dcdcaa !important; /* Yellow for functions */
+}
+
+.token.class-name {
+  color: #4ec9b0 !important; /* Teal for class names */
+}
+
+.token.tag {
+  color: #569cd6 !important; /* Blue for HTML/JSX tags */
+}
+
+.token.attr-name {
+  color: #92c5f8 !important; /* Light blue for attributes */
+}
+
+.token.attr-value {
+  color: #ce9178 !important; /* Orange for attribute values */
+}
+
+.token.punctuation {
+  color: #d4d4d4 !important; /* Light gray for punctuation */
+}
+
+.token.operator {
+  color: #d4d4d4 !important; /* Light gray for operators */
+}
+
+.token.property {
+  color: #9cdcfe !important; /* Light blue for CSS properties */
+}
+
+.token.selector {
+  color: #d7ba7d !important; /* Gold for CSS selectors */
+}
+
+/* Variables and other identifiers - White color */
+.token.variable {
+  color: #ffffff !important; /* White for variables */
+}
+
+.token.constant {
+  color: #ffffff !important; /* White for constants */
+}
+
+.token.parameter {
+  color: #ffffff !important; /* White for parameters */
+}
+
+/* Default text color for unmatched tokens (variables, identifiers) */
+pre[class*="language-"] {
+  color: #ffffff !important; /* White for default text including variables */
+}
+
+code[class*="language-"] {
+  color: #ffffff !important; /* White for default text including variables */
+}
+
+/* Ensure all plain text and identifiers are white */
+pre[class*="language-"] * {
+  color: inherit !important;
+}
+
+/* Override any remaining black text */
+.token:not(.keyword):not(.string):not(.comment):not(.number):not(.boolean):not(.function):not(.class-name):not(.tag):not(.attr-name):not(.attr-value):not(.property):not(.selector) {
+  color: #ffffff !important;
+}
+
+/* Force all text in syntax highlighted editor to be white by default */
+pre[class*="language-"],
+code[class*="language-"],
+.token {
+  color: #ffffff !important;
+}
+
+/* Force white text in all code editor contexts */
+.syntax-highlighted-editor,
+.syntax-highlighted-editor *,
+[class*="language-"],
+[class*="language-"] * {
+  color: #ffffff !important;
+}
