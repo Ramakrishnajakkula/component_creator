@@ -8,7 +8,7 @@ import { parse } from 'postcss';
 export default {
   server: {
     hmr: {
-      host: 'component-creator-1.onrender.com',
+      host: 'https://component-creator-1.onrender.com',
       protocol: 'wss',
       port: 443
     }
