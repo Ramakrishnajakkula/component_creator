@@ -7,9 +7,11 @@ import { parse } from 'postcss';
 // vite.config.js
 export default {
   server: {
-    host: '0.0.0.0',
-    port: parseInt(process.env.PORT) || 5173,
-    allowedHosts: ['component-creator-1.onrender.com'],
+    hmr: {
+      host: 'component-creator-1.onrender.com',
+      protocol: 'wss',
+      port: 443
+    }
   },
   plugins: [react()],
 };
