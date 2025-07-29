@@ -191,8 +191,12 @@ export const Week5Showcase = () => {
                         statusText: "Internal Server Error",
                       },
                     }}
-                    onRetry={() => {/* Retry action */}}
-                    onDismiss={() => {/* Dismiss action */}}
+                    onRetry={() => {
+                      /* Retry action */
+                    }}
+                    onDismiss={() => {
+                      /* Dismiss action */
+                    }}
                     showDetails={true}
                   />
 
@@ -250,9 +254,21 @@ export const Week5Showcase = () => {
                 <h2 className="text-xl font-semibold mb-4">Empty States</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <EmptyChat onStartChat={() => {/* Start chat */}} />
-                  <EmptyPreview onGenerate={() => {/* Generate */}} />
-                  <EmptyCode onCreate={() => {/* Create */}} />
+                  <EmptyChat
+                    onStartChat={() => {
+                      /* Start chat */
+                    }}
+                  />
+                  <EmptyPreview
+                    onGenerate={() => {
+                      /* Generate */
+                    }}
+                  />
+                  <EmptyCode
+                    onCreate={() => {
+                      /* Create */
+                    }}
+                  />
                 </div>
               </section>
 

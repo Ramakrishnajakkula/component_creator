@@ -48,13 +48,14 @@ const ChatPanel = ({ sessionId }) => {
     console.log("MessageData:", {
       content: messageData.content,
       imageCount: messageData.images?.length || 0,
-      images: messageData.images?.map(img => ({
-        name: img.name,
-        type: img.type,
-        size: img.size,
-        hasBase64: !!img.base64,
-        base64Length: img.base64?.length || 0
-      })) || []
+      images:
+        messageData.images?.map((img) => ({
+          name: img.name,
+          type: img.type,
+          size: img.size,
+          hasBase64: !!img.base64,
+          base64Length: img.base64?.length || 0,
+        })) || [],
     });
 
     try {

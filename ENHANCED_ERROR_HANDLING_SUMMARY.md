@@ -103,29 +103,29 @@
 
 ```javascript
 // Enhanced API service with 404 handling
-services/apiEnhanced.js
+services / apiEnhanced.js;
 
 // Global error management
-components/api/ApiErrorProvider.jsx
+components / api / ApiErrorProvider.jsx;
 
-// Error management hooks  
-hooks/useApiError.js
+// Error management hooks
+hooks / useApiError.js;
 
 // Enhanced session restore
-components/autosave/SessionRestoreEnhanced.jsx
+components / autosave / SessionRestoreEnhanced.jsx;
 
 // Enhanced auto-save
-components/autosave/AutoSaveEnhanced.jsx
+components / autosave / AutoSaveEnhanced.jsx;
 ```
 
 ### Updated Core Files
 
 ```jsx
 // Integrated error handling providers
-src/App.jsx
+src / App.jsx;
 
-// Updated to use enhanced components  
-pages/EditorPage.jsx
+// Updated to use enhanced components
+pages / EditorPage.jsx;
 ```
 
 ## Verification
@@ -165,12 +165,12 @@ const apiService = {
         // Automatic fallback to local storage
         const localData = localStorage.getItem(`session_${sessionId}`);
         if (localData) {
-          return { data: { ...JSON.parse(localData), source: 'local' } };
+          return { data: { ...JSON.parse(localData), source: "local" } };
         }
         throw error;
       }
-    }
-  }
+    },
+  },
 };
 ```
 
@@ -192,10 +192,10 @@ const apiService = {
 ```javascript
 // Environment variables for API configuration
 const config = {
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   timeout: 10000,
   fallbackToLocal: true,
-  healthCheckInterval: 120000 // 2 minutes
+  healthCheckInterval: 120000, // 2 minutes
 };
 ```
 
@@ -204,18 +204,18 @@ const config = {
 ```typescript
 // Error classification system
 const errorTypes = {
-  NETWORK_ERROR: 'Connection failed',
-  NOT_FOUND: 'Resource not found',
-  SERVER_ERROR: 'Server error',
-  CLIENT_ERROR: 'Request error'
+  NETWORK_ERROR: "Connection failed",
+  NOT_FOUND: "Resource not found",
+  SERVER_ERROR: "Server error",
+  CLIENT_ERROR: "Request error",
 };
 
 // User-friendly error messages
 const getErrorMessage = (error, endpoint) => {
-  if (error.status === 404 && endpoint.includes('/sessions/')) {
-    return 'Session not found. Using local storage fallback.';
+  if (error.status === 404 && endpoint.includes("/sessions/")) {
+    return "Session not found. Using local storage fallback.";
   }
-  return 'An error occurred. Please try again.';
+  return "An error occurred. Please try again.";
 };
 ```
 

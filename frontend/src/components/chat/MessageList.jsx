@@ -149,9 +149,10 @@ const MessageList = ({ messages, isLoading, sessionId }) => {
             {/* Images */}
             {message.images && message.images.length > 0 && (
               <div className="mt-3 space-y-2">
-                <div className={`text-sm font-medium mb-2 ${
-                  isUser ? "text-blue-100" : "text-gray-300"
-                }`}>
+                <div
+                  className={`text-sm font-medium mb-2 ${
+                    isUser ? "text-blue-100" : "text-gray-300"
+                  }`}>
                   Attached Images ({message.images.length})
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -163,14 +164,15 @@ const MessageList = ({ messages, isLoading, sessionId }) => {
                         className="w-full h-32 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => {
                           // Open image in new tab for larger view
-                          window.open(image.dataUrl || image.url, '_blank');
+                          window.open(image.dataUrl || image.url, "_blank");
                         }}
                       />
                       <div
                         className={`absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-1 rounded-b truncate ${
                           isUser ? "text-blue-100" : "text-gray-100"
                         }`}>
-                        {image.name} {image.size && `(${(image.size / 1024).toFixed(1)} KB)`}
+                        {image.name}{" "}
+                        {image.size && `(${(image.size / 1024).toFixed(1)} KB)`}
                       </div>
                     </div>
                   ))}

@@ -15,7 +15,7 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
       if (selectedImages.length > 0) {
         debugImageProcessing(selectedImages);
       }
-      
+
       onSendMessage({
         content: message.trim(),
         images: selectedImages,
@@ -28,35 +28,45 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     const maxFileSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
-    
-    const validFiles = files.filter(file => {
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/gif",
+      "image/webp",
+    ];
+
+    const validFiles = files.filter((file) => {
       // Check file type
       if (!allowedTypes.includes(file.type)) {
-        alert(`${file.name} is not a supported image format. Please use PNG, JPEG, GIF, or WebP.`);
+        alert(
+          `${file.name} is not a supported image format. Please use PNG, JPEG, GIF, or WebP.`
+        );
         return false;
       }
-      
+
       // Check file size
       if (file.size > maxFileSize) {
         alert(`${file.name} is too large. Maximum file size is 5MB.`);
         return false;
       }
-      
+
       return true;
     });
-    
+
     if (validFiles.length > 0) {
       const remainingSlots = 5 - selectedImages.length;
       const filesToProcess = validFiles.slice(0, remainingSlots);
-      
+
       if (validFiles.length > remainingSlots) {
-        alert(`You can only upload ${remainingSlots} more image(s). First ${remainingSlots} valid images will be added.`);
+        alert(
+          `You can only upload ${remainingSlots} more image(s). First ${remainingSlots} valid images will be added.`
+        );
       }
-      
+
       // Convert images to base64 for preview and sending
       Promise.all(
-        filesToProcess.map(file => {
+        filesToProcess.map((file) => {
           return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -66,29 +76,31 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
                 size: file.size,
                 type: file.type,
                 dataUrl: e.target.result,
-                base64: e.target.result.split(',')[1] // Remove data:image/...;base64, prefix
+                base64: e.target.result.split(",")[1], // Remove data:image/...;base64, prefix
               });
             };
             reader.onerror = reject;
             reader.readAsDataURL(file);
           });
         })
-      ).then(processedImages => {
-        setSelectedImages(prev => [...prev, ...processedImages]);
-      }).catch(error => {
-        console.error('Error processing images:', error);
-        alert('Failed to process some images. Please try again.');
-      });
+      )
+        .then((processedImages) => {
+          setSelectedImages((prev) => [...prev, ...processedImages]);
+        })
+        .catch((error) => {
+          console.error("Error processing images:", error);
+          alert("Failed to process some images. Please try again.");
+        });
     }
-    
+
     // Clear the input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const removeImage = (index) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const openFileDialog = () => {
@@ -111,29 +123,28 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
     if (imageFiles.length > 0) {
       // Create a mock event object to use existing handleImageSelect logic
       const mockEvent = {
         target: {
-          files: imageFiles
-        }
+          files: imageFiles,
+        },
       };
       handleImageSelect(mockEvent);
     }
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit} 
+    <form
+      onSubmit={handleSubmit}
       className="p-4"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
+      onDrop={handleDrop}>
       {/* Drag overlay */}
       {isDragging && (
         <div className="absolute inset-0 bg-blue-500/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center z-10">
@@ -151,8 +162,7 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
               <button
                 type="button"
                 onClick={() => setSelectedImages([])}
-                className="text-sm text-red-600 hover:text-red-700 transition-colors"
-              >
+                className="text-sm text-red-600 hover:text-red-700 transition-colors">
                 Clear all
               </button>
             )}
@@ -180,7 +190,7 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
           onChange={handleImageSelect}
           className="hidden"
         />
-        
+
         {/* Image upload button */}
         <div className="relative">
           <button
@@ -189,13 +199,25 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
             disabled={isLoading || selectedImages.length >= 5}
             className={`px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
               selectedImages.length > 0
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-600 text-white hover:bg-gray-700'
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-600 text-white hover:bg-gray-700"
             }`}
-            title={selectedImages.length >= 5 ? 'Maximum 5 images allowed' : 'Upload images (PNG, JPG, JPEG, GIF, WebP)'}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            title={
+              selectedImages.length >= 5
+                ? "Maximum 5 images allowed"
+                : "Upload images (PNG, JPG, JPEG, GIF, WebP)"
+            }>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           </button>
           {selectedImages.length > 0 && (
@@ -215,7 +237,9 @@ const MessageInput = ({ onSendMessage, isLoading, placeholder }) => {
         />
         <button
           type="submit"
-          disabled={(!message.trim() && selectedImages.length === 0) || isLoading}
+          disabled={
+            (!message.trim() && selectedImages.length === 0) || isLoading
+          }
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
           {isLoading ? (
             <svg

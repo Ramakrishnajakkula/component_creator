@@ -8,9 +8,11 @@ import { parse } from 'postcss';
 export default {
   server: {
     host: '0.0.0.0',
+     plugins: [react()],
     port: parseInt(process.env.PORT) || 5173,
     allowedHosts: ['component-creator-1.onrender.com'],
   },
+  plugins: [react()],
 };
 
 

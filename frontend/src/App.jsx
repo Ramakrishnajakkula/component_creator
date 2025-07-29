@@ -33,89 +33,87 @@ function App() {
       <Router>
         <div className="min-h-screen bg-gray-50">
           <Routes>
-                  {/* Public routes */}
-                  <Route
-                    path="/login"
-                    element={
-                      isAuthenticated ? (
-                        <Navigate to="/dashboard" replace />
-                      ) : (
-                        <Login />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/register"
-                    element={
-                      isAuthenticated ? (
-                        <Navigate to="/dashboard" replace />
-                      ) : (
-                        <Register />
-                      )
-                    }
-                  />
+            {/* Public routes */}
+            <Route
+              path="/login"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Login />
+                )
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Register />
+                )
+              }
+            />
 
-                  {/* Protected routes */}
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
+            {/* Protected routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-                  {/* Editor/Session route */}
-                  <Route
-                    path="/session/:sessionId"
-                    element={
-                      <ProtectedRoute>
-                        <EditorPage />
-                      </ProtectedRoute>
-                    }
-                  />
+            {/* Editor/Session route */}
+            <Route
+              path="/session/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <EditorPage />
+                </ProtectedRoute>
+              }
+            />
 
-                  {/* Alternative editor route */}
-                  <Route
-                    path="/editor/:sessionId"
-                    element={
-                      <ProtectedRoute>
-                        <EditorPage />
-                      </ProtectedRoute>
-                    }
-                  />
+            {/* Alternative editor route */}
+            <Route
+              path="/editor/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <EditorPage />
+                </ProtectedRoute>
+              }
+            />
 
-                  {/* Default redirect */}
-                  <Route
-                    path="/"
-                    element={
-                      <Navigate
-                        to={isAuthenticated ? "/dashboard" : "/login"}
-                        replace
-                      />
-                    }
-                  />
+            {/* Default redirect */}
+            <Route
+              path="/"
+              element={
+                <Navigate
+                  to={isAuthenticated ? "/dashboard" : "/login"}
+                  replace
+                />
+              }
+            />
 
-                  {/* 404 page */}
-                  <Route
-                    path="*"
-                    element={
-                      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                        <div className="text-center">
-                          <h1 className="text-4xl font-bold text-gray-900">
-                            404
-                          </h1>
-                          <p className="text-gray-600 mt-2">Page not found</p>
-                          <a href="/" className="btn btn-primary mt-4">
-                            Go Home
-                          </a>
-                        </div>
-                      </div>
-                    }
-                  />
-                </Routes>
-              </div>
-            </Router>
+            {/* 404 page */}
+            <Route
+              path="*"
+              element={
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-gray-900">404</h1>
+                    <p className="text-gray-600 mt-2">Page not found</p>
+                    <a href="/" className="btn btn-primary mt-4">
+                      Go Home
+                    </a>
+                  </div>
+                </div>
+              }
+            />
+          </Routes>
+        </div>
+      </Router>
       <Toaster
         position="top-right"
         toastOptions={{

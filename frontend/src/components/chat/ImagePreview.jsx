@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const ImagePreview = ({ image, onRemove }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
@@ -22,21 +22,22 @@ const ImagePreview = ({ image, onRemove }) => {
             className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => setIsExpanded(true)}
           />
-          
+
           {/* Remove button */}
           <button
             type="button"
             onClick={onRemove}
             className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-sm hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-            title="Remove image"
-          >
+            title="Remove image">
             ×
           </button>
 
           {/* Image info overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
             <div className="text-white text-xs truncate">{image.name}</div>
-            <div className="text-white/80 text-xs">{formatFileSize(image.size)}</div>
+            <div className="text-white/80 text-xs">
+              {formatFileSize(image.size)}
+            </div>
           </div>
         </div>
       </div>
@@ -47,8 +48,7 @@ const ImagePreview = ({ image, onRemove }) => {
           <div className="relative max-w-4xl max-h-full">
             <button
               onClick={() => setIsExpanded(false)}
-              className="absolute -top-10 right-0 text-white text-xl hover:text-gray-300"
-            >
+              className="absolute -top-10 right-0 text-white text-xl hover:text-gray-300">
               ✕ Close
             </button>
             <img

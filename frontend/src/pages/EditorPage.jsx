@@ -672,7 +672,6 @@ const EditorPage = () => {
         onClose={() => setShowCodeDiff(false)}
         sessionId={sessionId}
       />
-
     </div>
   );
 };
