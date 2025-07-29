@@ -45,7 +45,17 @@ const ChatPanel = ({ sessionId }) => {
     // Debug logging
     console.log("Sending message with sessionId:", sessionId);
     console.log("SessionId type:", typeof sessionId);
-    console.log("MessageData:", messageData);
+    console.log("MessageData:", {
+      content: messageData.content,
+      imageCount: messageData.images?.length || 0,
+      images: messageData.images?.map(img => ({
+        name: img.name,
+        type: img.type,
+        size: img.size,
+        hasBase64: !!img.base64,
+        base64Length: img.base64?.length || 0
+      })) || []
+    });
 
     try {
       // Send user message
@@ -55,6 +65,7 @@ const ChatPanel = ({ sessionId }) => {
           content: messageData.content,
           type: "user",
           metadata: messageData.metadata,
+          images: messageData.images || [],
         })
       );
 

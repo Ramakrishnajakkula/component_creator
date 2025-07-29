@@ -4,6 +4,7 @@ import sessionSlice from './slices/sessionSlice';
 import chatSlice from './slices/chatSlice';
 import editorSlice from './slices/editorSlice';
 import versionHistorySlice from './slices/versionHistorySlice';
+import exportSlice from './slices/exportSlice';
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
     sessions: sessionSlice,
     chat: chatSlice,
     editor: editorSlice,
-    versionHistory: versionHistorySlice
+    versionHistory: versionHistorySlice,
+    export: exportSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

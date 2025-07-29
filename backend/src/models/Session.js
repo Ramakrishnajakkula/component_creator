@@ -25,6 +25,28 @@ const messageSchema = new mongoose.Schema({
     hasImage: Boolean,
     imageUrl: String,
     error: String
+  },
+  // Component code fields for AI messages
+  code: {
+    type: String,
+    default: ''
+  },
+  css: {
+    type: String,
+    default: ''
+  },
+  componentCode: {
+    jsx: {
+      type: String,
+      default: ''
+    },
+    css: {
+      type: String,
+      default: ''
+    },
+    dependencies: [{
+      type: String
+    }]
   }
 });
 

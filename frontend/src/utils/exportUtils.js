@@ -29,8 +29,8 @@ export const copyToClipboard = async (text) => {
         throw new Error('Copy command failed');
       }
     }
-  } catch (error) {
-    console.error('Failed to copy to clipboard:', error);
+  } catch {
+    // Silent clipboard failure
     return { success: false, message: 'Failed to copy to clipboard' };
   }
 };
@@ -269,9 +269,9 @@ yarn-error.log*
     const content = await zip.generateAsync({ type: 'blob' });
     return { success: true, content, filename: `${cleanName}-component.zip` };
     
-  } catch (error) {
-    console.error('Failed to create ZIP file:', error);
-    return { success: false, error: error.message };
+  } catch {
+    // Silent ZIP creation failure
+    return { success: false, error: 'Failed to create ZIP file' };
   }
 };
 
@@ -289,8 +289,8 @@ export const downloadBlob = (blob, filename) => {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
     return { success: true, message: 'Download started!' };
-  } catch (error) {
-    console.error('Failed to download file:', error);
+  } catch {
+    // Silent download failure
     return { success: false, message: 'Failed to download file' };
   }
 };

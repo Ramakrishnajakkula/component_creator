@@ -360,7 +360,7 @@ const autoSave = asyncHandler(async (req, res) => {
 
 // Add message to session's chat history
 const addMessageToSession = asyncHandler(async (req, res) => {
-  const { sessionId, content, type, metadata, timestamp, id } = req.body;
+  const { sessionId, content, type, metadata, timestamp, id, componentCode } = req.body;
   const userId = req.user._id;
 
   if (!sessionId || sessionId === 'undefined') {
@@ -386,18 +386,58 @@ const addMessageToSession = asyncHandler(async (req, res) => {
     status: 'sent'
   };
 
-  // Use atomic operation to avoid parallel save issues
-  await Session.findByIdAndUpdate(
+  // Add component code fields directly to the message for AI messages
+  if (type === 'ai' && componentCode) {
+    message.code = componentCode.jsx || '';
+    message.css = componentCode.css || '';
+    message.componentCode = {
+      jsx: componentCode.jsx || '',
+      css: componentCode.css || '',
+      dependencies: componentCode.dependencies || []
+    };
+    
+    console.log('💾 Adding component code to message:', {
+      messageId: message.id,
+      hasJSX: !!message.code,
+      hasCSS: !!message.css,
+      jsxLength: message.code?.length || 0,
+      cssLength: message.css?.length || 0
+    });
+  }
+
+  // Prepare update operations
+  const updateOperations = {
+    $push: { chatHistory: message },
+    $set: { 
+      lastAccessedAt: new Date(),
+      updatedAt: new Date()
+    }
+  };
+
+  // If this is an AI message with component code, update the session's componentCode atomically
+  if (type === 'ai' && componentCode) {
+    // Prepare componentCode update
+    const componentCodeUpdate = {
+      jsx: componentCode.jsx || '',
+      css: componentCode.css || '',
+      dependencies: componentCode.dependencies || [],
+      version: (session.componentCode?.version || 0) + 1,
+      lastModified: new Date()
+    };
+
+    updateOperations.$set.componentCode = componentCodeUpdate;
+  }
+
+  // Use single atomic operation to avoid parallel save issues
+  const updatedSession = await Session.findByIdAndUpdate(
     sessionId,
-    { 
-      $push: { chatHistory: message },
-      $set: { 
-        lastAccessedAt: new Date(),
-        updatedAt: new Date()
-      }
-    },
+    updateOperations,
     { new: true }
   );
+
+  if (!updatedSession) {
+    throw createError.notFound('Session not found during update');
+  }
 
   // Clear cache
   const cacheKey = `session:${sessionId}`;

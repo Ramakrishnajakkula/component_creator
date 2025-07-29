@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   copyToClipboard,
   createComponentZip,
@@ -7,10 +7,20 @@ import {
   generateComponentFile,
   extractDependencies,
 } from "../../utils/exportUtils";
+import { 
+  addLocalExport, 
+  saveExportHistory, 
+  loadExportHistory, 
+  selectExportHistory, 
+  selectExportStats 
+} from "../../store/slices/exportSlice";
 
 const ExportPanel = ({ isOpen, onClose }) => {
+  const dispatch = useDispatch();
   const { code, css } = useSelector((state) => state.editor);
   const { currentSession } = useSelector((state) => state.sessions);
+  const exportHistory = useSelector(selectExportHistory);
+  const exportStats = useSelector(selectExportStats);
 
   const [exportStatus, setExportStatus] = useState("");
   const [componentName, setComponentName] = useState(
@@ -18,10 +28,48 @@ const ExportPanel = ({ isOpen, onClose }) => {
   );
   const [includeCSS, setIncludeCSS] = useState(!!css);
   const [isExporting, setIsExporting] = useState(false);
+  const [activeTab, setActiveTab] = useState("export"); // "export" or "history"
+
+  // Load export history when panel opens
+  useEffect(() => {
+    if (isOpen && currentSession?.id) {
+      dispatch(loadExportHistory(currentSession.id));
+    }
+  }, [isOpen, currentSession?.id, dispatch]);
+
+  const trackExport = async (format, details = {}) => {
+    const exportData = {
+      id: Date.now(),
+      sessionId: currentSession?.id,
+      componentName,
+      format,
+      includeCSS,
+      codeSize: code?.length || 0,
+      cssSize: css?.length || 0,
+      ...details
+    };
+
+    // Add to local state immediately
+    dispatch(addLocalExport(exportData));
+
+    // Save to server
+    if (currentSession?.id) {
+      try {
+        await dispatch(saveExportHistory({
+          sessionId: currentSession.id,
+          exportData
+        }));
+      } catch (error) {
+        console.error('Failed to save export history:', error);
+      }
+    }
+  };
 
   const handleCopyCode = async () => {
     try {
       setExportStatus("");
+      setIsExporting(true);
+      
       const { componentCode } = generateComponentFile(
         componentName,
         code,
@@ -31,18 +79,23 @@ const ExportPanel = ({ isOpen, onClose }) => {
 
       if (result.success) {
         setExportStatus("✅ Component code copied to clipboard!");
+        await trackExport("clipboard", { type: "component" });
       } else {
         setExportStatus("❌ Failed to copy to clipboard");
       }
     } catch (error) {
       setExportStatus("❌ Error copying code");
       console.error("Copy error:", error);
+    } finally {
+      setIsExporting(false);
     }
   };
 
   const handleCopyCSS = async () => {
     try {
       setExportStatus("");
+      setIsExporting(true);
+      
       if (!css) {
         setExportStatus("⚠️ No CSS code to copy");
         return;
@@ -51,13 +104,16 @@ const ExportPanel = ({ isOpen, onClose }) => {
       const result = await copyToClipboard(css);
 
       if (result.success) {
-        setExportStatus("✅ CSS code copied to clipboard!");
+        setExportStatus("✅ CSS copied to clipboard!");
+        await trackExport("clipboard", { type: "css" });
       } else {
-        setExportStatus("❌ Failed to copy CSS to clipboard");
+        setExportStatus("❌ Failed to copy CSS");
       }
     } catch (error) {
       setExportStatus("❌ Error copying CSS");
       console.error("Copy CSS error:", error);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -163,37 +219,60 @@ const ExportPanel = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-4">
-          {/* Component Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Component Name
-            </label>
-            <input
-              type="text"
-              value={componentName}
-              onChange={(e) => setComponentName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="MyComponent"
-            />
-          </div>
+        {/* Tabs */}
+        <div className="flex border-b border-gray-700">
+          <button
+            onClick={() => setActiveTab("export")}
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === "export"
+                ? "text-blue-400 border-b-2 border-blue-400"
+                : "text-gray-400 hover:text-gray-200"
+            }`}>
+            Export
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === "history"
+                ? "text-blue-400 border-b-2 border-blue-400"
+                : "text-gray-400 hover:text-gray-200"
+            }`}>
+            History ({exportHistory.length})
+          </button>
+        </div>
 
-          {/* Options */}
-          <div className="space-y-3">
-            <label className="flex items-center">
+        {/* Tab Content */}
+        {activeTab === "export" ? (
+          <div className="p-6 space-y-4">
+            {/* Component Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Component Name
+              </label>
               <input
-                type="checkbox"
-                checked={includeCSS}
-                onChange={(e) => setIncludeCSS(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                disabled={!css}
+                type="text"
+                value={componentName}
+                onChange={(e) => setComponentName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="MyComponent"
               />
-              <span className="ml-2 text-sm text-gray-700">
-                Include CSS file {!css && "(No CSS available)"}
-              </span>
-            </label>
-          </div>
+            </div>
+
+            {/* Options */}
+            <div className="space-y-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={includeCSS}
+                  onChange={(e) => setIncludeCSS(e.target.checked)}
+                  className="rounded border-gray-600 text-blue-600 focus:ring-blue-500"
+                  disabled={!css}
+                />
+                <span className="ml-2 text-sm text-gray-300">
+                  Include CSS file {!css && "(No CSS available)"}
+                </span>
+              </label>
+            </div>
 
           {/* Export Buttons */}
           <div className="space-y-3">

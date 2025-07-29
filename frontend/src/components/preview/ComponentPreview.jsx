@@ -1,21 +1,54 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 
 const ComponentPreview = ({ code, css, onError, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [iframeKey, setIframeKey] = useState(0);
+  const [autoRefresh, setAutoRefresh] = useState(false); // Default to manual refresh
   const iframeRef = useRef(null);
   const { currentSession } = useSelector((state) => state.sessions);
+  const debounceTimeoutRef = useRef(null);
 
-  // Refresh iframe when code changes
-  useEffect(() => {
+  // Manual refresh function
+  const manualRefresh = useCallback(() => {
     if (code) {
       setIframeKey((prev) => prev + 1);
       setIsLoading(true);
       setError(null);
     }
-  }, [code, css]);
+  }, [code]);
+
+  // Debounced refresh function for auto mode
+  const debouncedRefresh = useCallback(() => {
+    if (!autoRefresh) return; // Only auto-refresh when enabled
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      if (code) {
+        setIframeKey((prev) => prev + 1);
+        setIsLoading(true);
+        setError(null);
+      }
+    }, 2000);
+  }, [code, autoRefresh]);
+
+  // Only auto-refresh when auto mode is enabled
+  useEffect(() => {
+    if (autoRefresh) {
+      debouncedRefresh();
+    }
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, [code, css, debouncedRefresh, autoRefresh]);
 
   const createPreviewHTML = () => {
     // Clean up the code by removing import statements and fixing common issues
@@ -261,6 +294,55 @@ const ComponentPreview = ({ code, css, onError, onSuccess }) => {
         </div>
 
         <div className="flex items-center space-x-2">
+          {/* Auto-refresh toggle */}
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`p-1.5 rounded transition-colors ${
+              autoRefresh
+                ? "text-blue-400 bg-blue-900/20 hover:bg-blue-900/30"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-600"
+            }`}
+            title={
+              autoRefresh ? "Disable auto-refresh" : "Enable auto-refresh"
+            }>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={
+                  autoRefresh
+                    ? "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    : "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                }
+              />
+            </svg>
+          </button>
+
+          {/* Manual Refresh Button */}
+          <button
+            onClick={manualRefresh}
+            disabled={isLoading}
+            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-600 rounded transition-colors disabled:opacity-50"
+            title="Refresh preview now">
+            <svg
+              className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+
           {/* Refresh Button */}
           <button
             onClick={refreshPreview}

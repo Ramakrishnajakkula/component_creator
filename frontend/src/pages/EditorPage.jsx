@@ -1,13 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import ChatPanel from "../components/chat/ChatPanel";
 import ComponentPreview from "../components/preview/ComponentPreview";
 import CodeEditor from "../components/editor/CodeEditor";
-import ExportPanel from "../components/export/ExportPanel";
+import ExportPanelNew from "../components/export/ExportPanelNew";
 import VersionHistoryPanel from "../components/version/VersionHistoryPanel";
-import AutoSave from "../components/autosave/AutoSave";
-import SessionRestore from "../components/session/SessionRestore";
+import CodeDiffViewer from "../components/diff/CodeDiffViewer";
 import ResizableLayout from "../components/ui/ResizableLayout";
 import PanelControls from "../components/ui/PanelControls";
 import { loadChatHistory } from "../store/slices/chatSlice";
@@ -32,6 +31,11 @@ const EditorPage = () => {
   const [previewError, setPreviewError] = useState(null);
   const [showExportPanel, setShowExportPanel] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showCodeDiff, setShowCodeDiff] = useState(false);
+
+  // Refs to track the last loaded code to prevent feedback loops
+  const lastLoadedCodeRef = useRef(null);
+  const lastLoadedCssRef = useRef(null);
 
   // Panel sizes state (in percentages)
   const [panelSizes, setPanelSizes] = useState({
@@ -63,18 +67,86 @@ const EditorPage = () => {
   // Extract code and CSS from the latest AI message when messages change
   useEffect(() => {
     const latestCodeMessage = messages
-      .filter((msg) => msg.type === "assistant" && msg.code)
+      .filter((msg) => msg.type === "ai" && (msg.code || msg.componentCode))
       .pop();
 
-    if (latestCodeMessage?.code && latestCodeMessage.code !== code) {
-      dispatch(setEditorCode(latestCodeMessage.code));
-    }
+    console.log("🔍 Checking for component code in messages:", {
+      totalMessages: messages.length,
+      aiMessages: messages.filter((msg) => msg.type === "ai").length,
+      messagesWithCode: messages.filter(
+        (msg) => msg.type === "ai" && (msg.code || msg.componentCode)
+      ).length,
+      latestCodeMessage: latestCodeMessage
+        ? {
+            id: latestCodeMessage.id,
+            hasCode: !!latestCodeMessage.code,
+            hasComponentCode: !!latestCodeMessage.componentCode,
+            codeLength: latestCodeMessage.code?.length || 0,
+          }
+        : null,
+    });
 
-    // Also extract CSS if available
-    if (latestCodeMessage?.css && latestCodeMessage.css !== css) {
-      dispatch(setEditorCSS(latestCodeMessage.css));
+    if (latestCodeMessage) {
+      // Check if message has componentCode field (new format)
+      if (latestCodeMessage.componentCode) {
+        if (
+          latestCodeMessage.componentCode.jsx &&
+          latestCodeMessage.componentCode.jsx !== lastLoadedCodeRef.current
+        ) {
+          console.log("📝 Loading JSX from message componentCode");
+          lastLoadedCodeRef.current = latestCodeMessage.componentCode.jsx;
+          dispatch(setEditorCode(latestCodeMessage.componentCode.jsx));
+        }
+        if (
+          latestCodeMessage.componentCode.css &&
+          latestCodeMessage.componentCode.css !== lastLoadedCssRef.current
+        ) {
+          console.log("🎨 Loading CSS from message componentCode");
+          lastLoadedCssRef.current = latestCodeMessage.componentCode.css;
+          dispatch(setEditorCSS(latestCodeMessage.componentCode.css));
+        }
+      }
+      // Fallback to old format
+      else if (
+        latestCodeMessage.code &&
+        latestCodeMessage.code !== lastLoadedCodeRef.current
+      ) {
+        console.log("📝 Loading JSX from message code field");
+        lastLoadedCodeRef.current = latestCodeMessage.code;
+        dispatch(setEditorCode(latestCodeMessage.code));
+      }
+
+      // Also extract CSS if available in old format
+      if (
+        latestCodeMessage.css &&
+        latestCodeMessage.css !== lastLoadedCssRef.current
+      ) {
+        console.log("🎨 Loading CSS from message css field");
+        lastLoadedCssRef.current = latestCodeMessage.css;
+        dispatch(setEditorCSS(latestCodeMessage.css));
+      }
     }
-  }, [messages, dispatch, code, css]);
+  }, [messages, dispatch]); // Using refs to track previous values instead of code/css deps
+
+  // Load component code from current session when it's available
+  useEffect(() => {
+    if (currentSession && currentSession.componentCode) {
+      if (
+        currentSession.componentCode.jsx &&
+        currentSession.componentCode.jsx !== lastLoadedCodeRef.current
+      ) {
+        lastLoadedCodeRef.current = currentSession.componentCode.jsx;
+        dispatch(setEditorCode(currentSession.componentCode.jsx));
+      }
+      if (
+        currentSession.componentCode.css &&
+        currentSession.componentCode.css !== lastLoadedCssRef.current
+      ) {
+        lastLoadedCssRef.current = currentSession.componentCode.css;
+        dispatch(setEditorCSS(currentSession.componentCode.css));
+      }
+    }
+  }, [currentSession, dispatch]); // Using refs to track previous values instead of code/css deps
 
   const handleCodeChange = (newCode) => {
     dispatch(setEditorCode(newCode));
@@ -423,6 +495,24 @@ const EditorPage = () => {
                 </svg>
               </button>
 
+              <button
+                onClick={() => setShowCodeDiff(true)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+                title="Compare Versions">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </button>
+
               <div className="w-px h-6 bg-gray-300"></div>
 
               <PanelControls
@@ -559,13 +649,12 @@ const EditorPage = () => {
 
           <div className="flex items-center space-x-4">
             <span>Layout: {layout.replace("-", " ")}</span>
-            <span>Auto-save enabled</span>
           </div>
         </div>
       </div>
 
       {/* Export Panel */}
-      <ExportPanel
+      <ExportPanelNew
         isOpen={showExportPanel}
         onClose={() => setShowExportPanel(false)}
       />
@@ -577,11 +666,13 @@ const EditorPage = () => {
         sessionId={sessionId}
       />
 
-      {/* Auto-save component */}
-      <AutoSave sessionId={sessionId} interval={30000} />
+      {/* Code Diff Viewer */}
+      <CodeDiffViewer
+        isOpen={showCodeDiff}
+        onClose={() => setShowCodeDiff(false)}
+        sessionId={sessionId}
+      />
 
-      {/* Session restore component */}
-      <SessionRestore sessionId={sessionId} />
     </div>
   );
 };

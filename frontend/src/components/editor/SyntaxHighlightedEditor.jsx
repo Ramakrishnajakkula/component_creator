@@ -1,45 +1,13 @@
-import React, { useEffect, useRef } from "react";
-import Prism from "prismjs";
-import "prismjs/themes/prism-tomorrow.css"; // VS Code-like dark theme
-import "prismjs/components/prism-javascript";
-import "prismjs/components/prism-jsx";
-import "prismjs/components/prism-css";
+import React from "react";
 
 const SyntaxHighlightedEditor = ({
   value,
   onChange,
   onKeyDown,
-  language = "jsx",
   placeholder,
   className = "",
   style = {},
 }) => {
-  const textareaRef = useRef(null);
-  const highlightRef = useRef(null);
-  const containerRef = useRef(null);
-
-  // Sync scroll between textarea and highlight
-  const handleScroll = () => {
-    if (textareaRef.current && highlightRef.current) {
-      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
-      highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
-    }
-  };
-
-  // Update syntax highlighting
-  useEffect(() => {
-    if (highlightRef.current && value) {
-      const highlighted = Prism.highlight(
-        value,
-        Prism.languages[language] || Prism.languages.javascript,
-        language
-      );
-      highlightRef.current.innerHTML = highlighted;
-    } else if (highlightRef.current) {
-      highlightRef.current.innerHTML = "";
-    }
-  }, [value, language]);
-
   const handleChange = (e) => {
     onChange(e);
   };
@@ -62,40 +30,19 @@ const SyntaxHighlightedEditor = ({
   };
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative w-full h-full bg-gray-900 overflow-hidden ${className}`}>
-      {/* Syntax highlighted background */}
-      <pre
-        ref={highlightRef}
-        className="absolute inset-0 overflow-auto pointer-events-none whitespace-pre-wrap break-words"
-        style={{
-          ...editorStyles,
-          zIndex: 1,
-          color: "inherit", // Let Prism handle colors
-        }}
-      />
-
-      {/* Transparent textarea for input */}
+    <div className={`relative w-full h-full bg-gray-900 ${className}`}>
+      {/* Simple functional textarea - no overlay complications */}
       <textarea
-        ref={textareaRef}
         value={value}
         onChange={handleChange}
         onKeyDown={onKeyDown}
-        onScroll={handleScroll}
         placeholder={placeholder}
-        className="absolute inset-0"
-        style={{
-          ...editorStyles,
-          background: "transparent",
-          color: "transparent",
-          caretColor: "#d4d4d4",
-          zIndex: 2,
-        }}
+        style={editorStyles}
         spellCheck={false}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
+        data-gramm="false"
       />
     </div>
   );

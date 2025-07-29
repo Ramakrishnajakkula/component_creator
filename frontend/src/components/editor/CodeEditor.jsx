@@ -352,12 +352,12 @@ const CodeEditor = ({ onCodeChange, onCSSChange }) => {
       <div className="flex-1 relative bg-gray-900">
         {/* JSX Editor */}
         {activeTab === "jsx" && (
-          <div className="h-full bg-gray-900">
-            <SyntaxHighlightedEditor
+          <div className="h-full p-4 bg-gray-900">
+            <textarea
+              ref={jsxTextareaRef}
               value={jsxCode}
               onChange={handleJSXChange}
               onKeyDown={handleKeyDown}
-              language="jsx"
               placeholder="// Start typing your React component here...
 function GeneratedComponent() {
   return (
@@ -366,19 +366,23 @@ function GeneratedComponent() {
     </div>
   );
 }"
-              style={{ minHeight: "300px" }}
+              className="w-full h-full resize-none border-0 outline-none font-mono text-sm leading-relaxed bg-gray-900 text-gray-100 placeholder-gray-500 pl-14"
+              style={{
+                fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', monospace",
+                minHeight: "300px",
+              }}
             />
           </div>
         )}
 
         {/* CSS Editor */}
         {activeTab === "css" && (
-          <div className="h-full bg-gray-900">
-            <SyntaxHighlightedEditor
+          <div className="h-full p-4 bg-gray-900">
+            <textarea
+              ref={cssTextareaRef}
               value={cssCode}
               onChange={handleCSSChange}
               onKeyDown={handleKeyDown}
-              language="css"
               placeholder="/* Add custom CSS styles here */
 .custom-class {
   color: #333;
@@ -387,13 +391,17 @@ function GeneratedComponent() {
 
 /* You can also use standard CSS or custom styles */
 "
-              style={{ minHeight: "300px" }}
+              className="w-full h-full resize-none border-0 outline-none font-mono text-sm leading-relaxed bg-gray-900 text-gray-100 placeholder-gray-500 pl-14"
+              style={{
+                fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', monospace",
+                minHeight: "300px",
+              }}
             />
           </div>
         )}
 
         {/* Line Numbers (Optional enhancement) */}
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gray-800 border-r border-gray-700 flex flex-col text-xs text-gray-500 font-mono pt-4">
+        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gray-800 border-r border-gray-700 flex flex-col text-xs text-gray-500 font-mono pt-4 pointer-events-none">
           {(activeTab === "jsx" ? jsxCode : cssCode)
             .split("\n")
             .map((_, index) => (

@@ -67,6 +67,15 @@ IMPORTANT RULES:
    - Responsive design
    - Accessibility considerations
 
+8. When analyzing provided images:
+   - Pay close attention to layout, colors, typography, and spacing
+   - Identify UI components (buttons, forms, cards, etc.)
+   - Match the visual design as closely as possible
+   - Include responsive design principles
+   - Implement interactive elements shown in the design
+   - Use appropriate CSS for styling to match the image
+   - If the image shows a mockup or design, recreate it accurately
+
 Example response:
 {
   "jsx": "const Button = () => {\\n  const [clicked, setClicked] = useState(false);\\n  const [count, setCount] = useState(0);\\n  \\n  const handleClick = () => {\\n    setClicked(!clicked);\\n    setCount(prev => prev + 1);\\n  };\\n  \\n  return (\\n    <button className=\\"btn\\" onClick={handleClick}>\\n      {clicked ? \`Clicked \${count} times!\` : 'Click Me'}\\n    </button>\\n  );\\n};\\n\\nexport default Button;",
@@ -77,8 +86,43 @@ Example response:
   }
 
   // Generate component based on user prompt
-  async generateComponent(prompt, model = this.defaultModel) {
+  async generateComponent(prompt, model = this.defaultModel, images = []) {
     try {
+      // Prepare the user message
+      let userMessage = {
+        role: 'user',
+        content: `Create a React component: ${prompt}`
+      };
+
+      // If images are provided, format them for the vision model
+      if (images && images.length > 0) {
+        console.log('🖼️ Processing', images.length, 'images for AI model');
+        
+        // For vision models, we need to format the content as an array
+        const content = [
+          {
+            type: 'text',
+            text: `Create a React component: ${prompt}`
+          }
+        ];
+
+        // Add each image to the content
+        images.forEach((image, index) => {
+          if (image.data && image.type) {
+            content.push({
+              type: 'image_url',
+              image_url: {
+                url: `data:${image.type};base64,${image.data}`,
+                detail: 'high' // Use high detail for better analysis
+              }
+            });
+            console.log(`📸 Added image ${index + 1}: ${image.name} (${image.type})`);
+          }
+        });
+
+        userMessage.content = content;
+      }
+
       const response = await this.client.post('/chat/completions', {
         model: model,
         messages: [
@@ -86,10 +130,7 @@ Example response:
             role: 'system',
             content: this.getSystemPrompt()
           },
-          {
-            role: 'user',
-            content: `Create a React component: ${prompt}`
-          }
+          userMessage
         ],
         temperature: 0.7,
         max_tokens: 2000

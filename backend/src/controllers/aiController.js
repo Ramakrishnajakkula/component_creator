@@ -6,12 +6,27 @@ const mongoose = require('mongoose');
 
 // Generate a new component
 const generateComponent = asyncHandler(async (req, res) => {
-  const { prompt, sessionId, model } = req.body;
+  const { prompt, sessionId, model, images = [] } = req.body;
   const userId = req.user._id;
 
-  console.log('AI Controller received:', { sessionId, prompt: prompt?.substring(0, 50), userId });
+  console.log('AI Controller received:', { 
+    sessionId, 
+    prompt: prompt?.substring(0, 50), 
+    userId,
+    imageCount: images.length,
+    model 
+  });
   console.log('SessionId type:', typeof sessionId);
   console.log('SessionId value:', sessionId);
+  
+  // Log image details if present
+  if (images.length > 0) {
+    console.log('Images received:', images.map(img => ({
+      name: img.name,
+      type: img.type,
+      dataLength: img.data?.length || 0
+    })));
+  }
 
   // Validate sessionId format
   if (!sessionId) {
@@ -63,8 +78,11 @@ const generateComponent = asyncHandler(async (req, res) => {
   try {
     // Generate component using AI service
     console.log('🚀 Starting AI generation for prompt:', prompt.substring(0, 100));
+    if (images.length > 0) {
+      console.log('📸 Including', images.length, 'images in generation');
+    }
     const startTime = Date.now();
-    const result = await aiService.generateComponent(prompt, model);
+    const result = await aiService.generateComponent(prompt, model, images);
     const processingTime = Date.now() - startTime;
     console.log('✅ AI generation completed in', processingTime, 'ms');
 
@@ -84,7 +102,8 @@ const generateComponent = asyncHandler(async (req, res) => {
       type: 'user',
       content: prompt,
       metadata: {
-        hasImage: false,
+        hasImage: images.length > 0,
+        imageCount: images.length,
         timestamp: new Date()
       }
     });
